@@ -1,27 +1,36 @@
 const { SMTPServer } = require('smtp-server');
 const { simpleParser } = require('mailparser');
 
+const express = require('express');
+const app = express();
+
+const admin = require('firebase-admin');
+
+const serviceAccount = require('./configs/firebase-adminsdk.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+app.use(express.json());
+
+
+require('./api/router').router(app);
+
+app.listen(7666, () => {
+  console.log('JMAIL API SERVER *:7666');
+})
+
+
+
+// --- MAIL SERVER
+
 const server = new SMTPServer({
   // Disable authentication
   authOptional: true,
 
-  // Handle the incoming mail
-  onData(stream, session, callback) {
-    simpleParser(stream)
-      .then(parsed => {
-        console.log('Email received:');
-        console.log('From:', parsed.from.text);
-        console.log('To:', parsed.to.text);
-        console.log('Subject:', parsed.subject);
-        console.log('Text:', parsed.text);
-      })
-      .catch(err => {
-        console.error('Error parsing email:', err);
-      })
-      .finally(() => {
-        callback(); // Always call the callback when processing the stream
-      });
-  },
+  // Handle the incoming mail using the external function
+  onData: emailStreamHandler,
 
   // Handle errors
   onError(err) {
@@ -29,7 +38,12 @@ const server = new SMTPServer({
   }
 });
 
+async function emailStreamHandler(stream, session, cb) {
+  const parsed = await simpleParser(stream);
+  console.log(parsed);
+  cb()
+}
 // Listen on port 25 for incoming connections
 server.listen(25, () => {
-  console.log('Mail server is listening on port 25');
+  console.log('JMAIL MAIL SERVER *:25');
 });
