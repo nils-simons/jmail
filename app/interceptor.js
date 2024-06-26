@@ -1,10 +1,14 @@
 const { simpleParser } = require('mailparser');
+const admin = require('firebase-admin');
 
 
 const interceptor = async (stream, session, cb) => {
     const parsed = await simpleParser(stream);
 
-    parsed.to.value.forEach((to) => {
+    const db = admin.firestore();
+
+
+    parsed.to.value.forEach(async (to) => {
         const mail_domain = to.address.split('@')[1];
 
         if (mail_domain !== process.env.MAIL_DEFAULT) {
@@ -17,6 +21,13 @@ const interceptor = async (stream, session, cb) => {
 
         console.log(alias)
 
+        const querySnap = await admin.firestore().collection('users').where('alias', '==', alias).get();
+
+        if (querySnap.empty) {
+            return
+        }
+
+        
     });
 
     cb()
