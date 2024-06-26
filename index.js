@@ -1,5 +1,5 @@
 const { SMTPServer } = require('smtp-server');
-const { simpleParser } = require('mailparser');
+require('dotenv').config()
 
 const express = require('express');
 const app = express();
@@ -30,7 +30,7 @@ const server = new SMTPServer({
   authOptional: true,
 
   // Handle the incoming mail using the external function
-  onData: emailStreamHandler,
+  onData: require('./app/interceptor').interceptor,
 
   // Handle errors
   onError(err) {
@@ -38,12 +38,6 @@ const server = new SMTPServer({
   }
 });
 
-async function emailStreamHandler(stream, session, cb) {
-  const parsed = await simpleParser(stream);
-  console.log(parsed);
-  cb()
-}
-// Listen on port 25 for incoming connections
 server.listen(25, () => {
   console.log('JMAIL MAIL SERVER *:25');
 });
