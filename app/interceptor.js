@@ -25,8 +25,7 @@ const interceptor = async (stream, session, cb) => {
         }
 
 
-        console.log(querySnap.docs[0])
-        
+        await email.logEmail(querySnap.docs[0].ref, parsedEmail)        
     });
 
     cb()

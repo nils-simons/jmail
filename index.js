@@ -10,6 +10,7 @@ const serviceAccount = require('./configs/firebase-adminsdk.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
+  storageBucket: 'jmail-mail-interceptor-api.appspot.com'
 });
 
 app.use(express.json());
